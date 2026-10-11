@@ -43,7 +43,7 @@ models/
 *.safetensors
 
 # ===== OS / editor =====
-.claude/settings.local.json
+.claude/
 Thumbs.db
 desktop.ini
 .vscode/*
