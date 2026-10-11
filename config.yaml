@@ -10,5 +10,6 @@ diarization:
   min_speakers: null
   max_speakers: null
 paths:
-  data: data
+  recordings: data/raw_recordings
+  presentations: data/presentations
   outputs: outputs

@@ -13,5 +13,6 @@ copy .env.example .env   # add HF_TOKEN
 ## Layout
 - `pipeline/` — code
 - `config.yaml` — settings (override in `config.local.yaml`)
-- `data/` — drop audio here (ignored)
+- `data/raw_recordings/<date>/` — review audio (ignored)
+- `data/presentations/<date>/` — presentation PDFs (ignored)
 - `outputs/` — transcripts (ignored)
