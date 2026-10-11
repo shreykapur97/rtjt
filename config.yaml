@@ -1,0 +1,14 @@
+# Default settings. Copy to config.local.yaml to override (gitignored).
+whisper:
+  model: large-v3
+  device: cuda
+  compute_type: float16
+  language: null        # null = auto-detect
+diarization:
+  enabled: true
+  model: pyannote/speaker-diarization-3.1
+  min_speakers: null
+  max_speakers: null
+paths:
+  data: data
+  outputs: outputs

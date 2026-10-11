@@ -1,0 +1,50 @@
+# ===== PRIVACY: never commit student data =====
+data/*
+outputs/*
+!data/.gitkeep
+!outputs/.gitkeep
+
+# Audio / video anywhere in the repo
+*.wav
+*.mp3
+*.m4a
+*.flac
+*.ogg
+*.opus
+*.aac
+*.wma
+*.webm
+*.mp4
+*.mov
+*.mkv
+
+# Transcripts anywhere
+*.srt
+*.vtt
+*.rttm
+
+# ===== Secrets & local config =====
+.env
+.env.*
+!.env.example
+config.local.yaml
+
+# ===== Python =====
+.venv/
+__pycache__/
+*.py[cod]
+
+# ===== Models =====
+models/
+*.bin
+*.pt
+*.pth
+*.onnx
+*.safetensors
+
+# ===== OS / editor =====
+.claude/settings.local.json
+Thumbs.db
+desktop.ini
+.vscode/*
+!.vscode/settings.json
