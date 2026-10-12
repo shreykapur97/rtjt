@@ -39,6 +39,7 @@ def stats(utterances: list[dict]) -> tuple[int, int]:
 def main() -> None:
     parser = argparse.ArgumentParser(description="Re-run speaker detection on saved transcripts")
     parser.add_argument("label", help="name for this run, e.g. community-1")
+    parser.add_argument("--only", nargs="*", help="only these students")
     args = parser.parse_args()
 
     cfg = load_config()
@@ -53,7 +54,7 @@ def main() -> None:
     for json_path in sorted((outputs / "_work").rglob("*.json")):
         data = json.loads(json_path.read_text(encoding="utf-8"))
         meta = data["meta"]
-        if "words" not in data["utterances"][0]:
+        if "words" not in data["utterances"][0] or (args.only and meta["student"] not in args.only):
             continue
         print(f"  {meta['student']} {meta['date']}...")
         old = remove_ghosts(data["utterances"], ghost)
