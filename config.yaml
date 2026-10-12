@@ -27,10 +27,10 @@ diarization:
   min_speakers: null
   max_speakers: null
 render:
-  # "Ghost" speakers (noise, a mis-split voice) get their words merged into the nearest real
-  # speaker when BOTH limits hold: under this many seconds and under this share of all speech
-  ghost_max_seconds: 30
-  ghost_max_share: 0.02
+  # "Ghost" speakers (noise, a cough read as a word) with this many words or fewer in the
+  # whole recording are merged into the nearest real speaker. Keep low: brief real
+  # interjections (finishing someone's sentence) should stay as their own speaker.
+  ghost_max_words: 2
   paragraph_pause: 1.5       # seconds of silence that start a new paragraph
   paragraph_max_words: 120    # split long monologues at the next sentence end
   interjection_max_words: 3   # "yeah", "mm-hm" folded inline into the other speaker's turn

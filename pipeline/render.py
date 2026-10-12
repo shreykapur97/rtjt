@@ -69,7 +69,7 @@ def _paragraphs(words: list[dict], cfg: dict) -> list[list[dict]]:
 
 def render_markdown(data: dict, cfg: dict, presentation: Path | None, md_path: Path) -> str:
     meta = data["meta"]
-    utterances = remove_ghosts(data["utterances"], cfg["ghost_max_seconds"], cfg["ghost_max_share"])
+    utterances = remove_ghosts(data["utterances"], cfg["ghost_max_words"])
     speaking = _speaking_time(utterances)
     total = sum(speaking.values()) or 1
 

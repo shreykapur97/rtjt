@@ -32,15 +32,14 @@ def build_utterances(words: list[dict], turns: list[tuple[float, float, str]]) -
     return group_words([{**w, "speaker": _speaker_for(w, turns) if turns else "SPEAKER"} for w in words])
 
 
-def remove_ghosts(utterances: list[dict], max_seconds: float, max_share: float) -> list[dict]:
-    """Speakers with very little speech (under `max_seconds` AND under `max_share` of all speech)
-    are usually noise or a mis-split voice: give their words to the nearest real speaker in time."""
+def remove_ghosts(utterances: list[dict], max_words: int) -> list[dict]:
+    """Speakers with `max_words` or fewer words in the whole recording are usually noise:
+    give their words to the nearest real speaker in time."""
     words = [w for u in utterances for w in u["words"]]
-    talk = defaultdict(float)
+    talk = defaultdict(int)
     for w in words:
-        talk[w["speaker"]] += w["end"] - w["start"]
-    total = sum(talk.values()) or 1
-    ghosts = {s for s, secs in talk.items() if secs < max_seconds and secs / total < max_share}
+        talk[w["speaker"]] += 1
+    ghosts = {s for s, n in talk.items() if n <= max_words}
     if not ghosts or len(ghosts) == len(talk):
         return utterances
 

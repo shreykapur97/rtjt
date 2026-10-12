@@ -112,8 +112,7 @@ def main() -> None:
         for clip, (audio, turns, ref, changes) in data.items():
             for r in range(repeats):
                 words, _ = transcribe(model, audio, wcfg, quiet=True)
-                utterances = remove_ghosts(build_utterances(words, turns),
-                                           cfg["render"]["ghost_max_seconds"], cfg["render"]["ghost_max_share"])
+                utterances = remove_ghosts(build_utterances(words, turns), cfg["render"]["ghost_max_words"])
                 labelled = [w for u in utterances for w in u["words"]]
                 hyp = [t for w in words for t in normalise(w["text"])]
                 score = (wer(ref, hyp), change_recall(ref, changes, labelled, ev["change_tolerance"]))
