@@ -4,10 +4,16 @@ whisper:
   device: cuda
   compute_type: float16
   language: en          # fixed language avoids mis-detection; null = auto-detect
-  condition_on_previous_text: true    # keeps punctuation/casing consistent across 30 s windows
-  # Words Whisper should spell correctly.
+  # Settings chosen by `python -m pipeline.evaluate` (2026-10-12: batched 3.0% WER vs 11-21% others)
+  batched: true         # decode pause-separated chunks independently: no skipped speech
+  batch_size: 8
+  style_prompt: false   # "polished" prompt made Whisper smooth over / skip messy speech
+  use_vocabulary: false # word lists below made Whisper insert them where not said
+  condition_on_previous_text: true    # only used when batched: false
+  # Word lists, only used when use_vocabulary: true.
   names: []             # people's names: set in config.local.yaml (private), not here
   terms: []             # thesis-specific words (topics, sites, places): config.local.yaml
+  languages: []         # other-language words people mix in (e.g. Spanish "vale"): config.local.yaml
   vocabulary:
     - IAAC
     - thesis
@@ -27,7 +33,19 @@ render:
   interjection_max_seconds: 2.0
   marker_before: 30           # seconds highlighted before a Ctrl+M marker
   marker_after: 10            # seconds highlighted after it
+eval:
+  repeats: 2                  # Whisper varies run to run; repeat to see the spread
+  change_tolerance: 3         # words either side that still count as a matching speaker change
+  # Each preset is tried on every clip in data/eval. Options:
+  #   style_prompt, vocabulary, batched (true/false); anything else overrides whisper settings
+  presets:
+    first_run:     {style_prompt: false, vocabulary: false, batched: false}
+    vocabulary:    {style_prompt: false, vocabulary: true,  batched: false}
+    current:       {style_prompt: true,  vocabulary: true,  batched: false}
+    batched:       {style_prompt: false, vocabulary: false, batched: true}
+    batched_vocab: {style_prompt: false, vocabulary: true,  batched: true}
 paths:
+  eval: data/eval
   recordings: data/raw_recordings
   presentations: data/presentations
   outputs: outputs

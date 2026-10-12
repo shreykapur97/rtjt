@@ -18,10 +18,10 @@ def _merge(base: dict, override: dict) -> dict:
 
 def load_config() -> dict:
     load_dotenv(ROOT / ".env")
-    cfg = yaml.safe_load((ROOT / "config.yaml").read_text())
+    cfg = yaml.safe_load((ROOT / "config.yaml").read_text(encoding="utf-8"))
     local = ROOT / "config.local.yaml"
     if local.exists():
-        _merge(cfg, yaml.safe_load(local.read_text()) or {})
+        _merge(cfg, yaml.safe_load(local.read_text(encoding="utf-8")) or {})
     for key, value in cfg["paths"].items():
         cfg["paths"][key] = ROOT / value
     return cfg
