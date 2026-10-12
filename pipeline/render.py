@@ -4,7 +4,7 @@ import os
 from collections import defaultdict
 from pathlib import Path
 
-from .merge import remove_ghosts
+from .merge import group_words, remove_ghosts
 
 SENTENCE_END = (".", "?", "!")
 
@@ -67,9 +67,24 @@ def _paragraphs(words: list[dict], cfg: dict) -> list[list[dict]]:
     return paras
 
 
-def render_markdown(data: dict, cfg: dict, presentation: Path | None, md_path: Path) -> str:
+def apply_names(utterances: list[dict], names: dict[str, str], student: str | None) -> list[dict]:
+    """Replace SPEAKER_xx with names. If `student` is given, not yet identified, and exactly one
+    speaker is left unnamed, that speaker is the student. Same name on two labels = one speaker."""
+    names = dict(names)
+    unnamed = {u["speaker"] for u in utterances} - names.keys()
+    if student and names and student not in names.values() and len(unnamed) == 1:
+        names[unnamed.pop()] = student
+    if not names:
+        return utterances
+    return group_words([{**w, "speaker": names.get(w["speaker"], w["speaker"])}
+                        for u in utterances for w in u["words"]])
+
+
+def render_markdown(data: dict, cfg: dict, presentation: Path | None, md_path: Path,
+                    names: dict[str, str] | None = None, label_student: bool = False) -> str:
     meta = data["meta"]
     utterances = remove_ghosts(data["utterances"], cfg["ghost_max_words"])
+    utterances = apply_names(utterances, names or {}, meta["student"] if label_student else None)
     speaking = _speaking_time(utterances)
     total = sum(speaking.values()) or 1
 
@@ -110,14 +125,17 @@ def render_markdown(data: dict, cfg: dict, presentation: Path | None, md_path: P
     return "\n".join(lines)
 
 
-def save(data: dict, cfg: dict, md_path: Path, json_path: Path, presentations_dir: Path) -> None:
+def save(data: dict, cfg: dict, md_path: Path, json_path: Path, presentations_dir: Path,
+         names: dict[str, str] | None = None, label_student: bool = False) -> None:
     json_path.parent.mkdir(parents=True, exist_ok=True)
     json_path.write_text(json.dumps(data, indent=1, ensure_ascii=False), encoding="utf-8")
-    write_markdown(data, cfg, md_path, presentations_dir)
+    write_markdown(data, cfg, md_path, presentations_dir, names, label_student)
 
 
-def write_markdown(data: dict, cfg: dict, md_path: Path, presentations_dir: Path) -> None:
+def write_markdown(data: dict, cfg: dict, md_path: Path, presentations_dir: Path,
+                   names: dict[str, str] | None = None, label_student: bool = False) -> None:
     meta = data["meta"]
     pdf = presentations_dir / meta["date"] / f"{meta['student']}.pdf"
     md_path.parent.mkdir(parents=True, exist_ok=True)
-    md_path.write_text(render_markdown(data, cfg, pdf if pdf.exists() else None, md_path), encoding="utf-8")
+    md = render_markdown(data, cfg, pdf if pdf.exists() else None, md_path, names, label_student)
+    md_path.write_text(md, encoding="utf-8")

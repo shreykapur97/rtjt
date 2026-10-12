@@ -27,6 +27,16 @@ diarization:
   exclusive: true      # true: one speaker at a time (community-1 only)
   min_speakers: null
   max_speakers: null
+voices:
+  people: []            # who to recognise in every recording, e.g. the guides: config.local.yaml
+  # Everyone else named in speakers.yaml (the students) also gets a voiceprint, but is only
+  # looked for in their own recordings (file name = student).
+  threshold: 0.65       # min similarity (0-1) to accept a match. 2026-10-12 test: same person
+                        # 0.91-0.97, different person <= 0.39
+  label_student: true   # if exactly one speaker is left unnamed, call them by the recording's name
+  min_segment: 2.0      # only turns at least this long (s) are used to describe a voice
+  max_segment: 10.0     # longer turns are cut to this length
+  max_segments: 40      # longest turns used per speaker
 render:
   # "Ghost" speakers (noise, a cough read as a word) with this many words or fewer in the
   # whole recording are merged into the nearest real speaker. Keep low: brief real
@@ -53,4 +63,5 @@ paths:
   eval: data/eval
   recordings: data/raw_recordings
   presentations: data/presentations
+  voiceprints: data/voiceprints
   outputs: outputs

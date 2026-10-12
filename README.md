@@ -38,7 +38,11 @@ Other commands:
 python -m pipeline --render                 # rebuild .md from .json after changing render settings
 python -m pipeline.evaluate                 # score settings on hand-corrected clips in data/eval/
 python -m pipeline.rediarize <label>        # re-run speaker detection only, into outputs/_compare/<label>/
+python -m pipeline.voices enroll|test|identify   # voiceprints: build, check accuracy, label transcripts
 ```
+Speaker names come from `outputs/_work/<date>/speakers.yaml` (manual, always wins) and from
+voiceprints in `data/voiceprints/` (both gitignored). People to recognise in every recording are
+listed under `voices.people` in `config.local.yaml`.
 Ctrl+M markers from Windows Sound Recorder are highlighted in the transcript.
 
 ## Evaluation
@@ -63,5 +67,5 @@ outputs/                     (ignored)
 - [x] Transcription + speaker diarization
 - [x] Evaluation on hand-corrected clips; batched Whisper, community-1 diarization
 - [x] Readable transcripts: paragraphs, interjections, markers, ghost-speaker cleanup
-- [ ] Speaker identification (voice profiles → real names)
+- [x] Speaker identification: voiceprints for recurring people (`pipeline.voices`), manual name map per round
 - [ ] Review summaries + per-student progress tracking

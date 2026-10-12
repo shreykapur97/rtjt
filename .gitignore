@@ -31,6 +31,7 @@ outputs/*
 .env.*
 !.env.example
 config.local.yaml
+HANDBOOK.md
 
 # ===== Python =====
 .venv/
