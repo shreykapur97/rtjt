@@ -3,12 +3,27 @@ whisper:
   model: large-v3
   device: cuda
   compute_type: float16
-  language: null        # null = auto-detect
+  language: en          # fixed language avoids mis-detection; null = auto-detect
+  condition_on_previous_text: true    # keeps punctuation/casing consistent across 30 s windows
+  # Words Whisper should spell correctly.
+  names: []             # people's names: set in config.local.yaml (private), not here
+  vocabulary:
+    - IAAC
+    - thesis
+    - masterplan
+    - parametric
+    - Grasshopper
+    - Rhino
 diarization:
   enabled: true
   model: pyannote/speaker-diarization-3.1
   min_speakers: null
   max_speakers: null
+render:
+  paragraph_pause: 1.5        # seconds of silence that start a new paragraph
+  paragraph_max_words: 120    # split long monologues at the next sentence end
+  interjection_max_words: 3   # "yeah", "mm-hm" folded inline into the other speaker's turn
+  interjection_max_seconds: 2.0
 paths:
   recordings: data/raw_recordings
   presentations: data/presentations

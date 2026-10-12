@@ -1,5 +1,5 @@
 [project]
-name = "rtpm"
+name = "rtjt"
 version = "0.1.0"
 description = "Transcribe and speaker-label recorded thesis cluster student reviews"
 readme = "README.md"

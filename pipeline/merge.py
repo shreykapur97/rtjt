@@ -1,6 +1,4 @@
-"""Assign a speaker to each word, group into utterances, write outputs."""
-import json
-from pathlib import Path
+"""Assign a speaker to each word and group words into utterances."""
 
 
 def _speaker_for(word: dict, turns: list[tuple[float, float, str]]) -> str:
@@ -17,37 +15,13 @@ def _speaker_for(word: dict, turns: list[tuple[float, float, str]]) -> str:
 
 
 def build_utterances(words: list[dict], turns: list[tuple[float, float, str]]) -> list[dict]:
+    """Consecutive words by the same speaker form one utterance. Words are kept for re-rendering."""
     utterances = []
     for w in words:
-        speaker = _speaker_for(w, turns) if turns else "SPEAKER"
-        if utterances and utterances[-1]["speaker"] == speaker:
+        w = {**w, "speaker": _speaker_for(w, turns) if turns else "SPEAKER"}
+        if utterances and utterances[-1]["speaker"] == w["speaker"]:
             utterances[-1]["end"] = w["end"]
-            utterances[-1]["text"] += w["text"]
+            utterances[-1]["words"].append(w)
         else:
-            utterances.append({"speaker": speaker, "start": w["start"], "end": w["end"], "text": w["text"]})
-    for u in utterances:
-        u["text"] = u["text"].strip()
+            utterances.append({"speaker": w["speaker"], "start": w["start"], "end": w["end"], "words": [w]})
     return utterances
-
-
-def _ts(seconds: float) -> str:
-    s = int(seconds)
-    return f"{s // 3600:02d}:{s % 3600 // 60:02d}:{s % 60:02d}"
-
-
-def write_outputs(utterances: list[dict], meta: dict, md_path: Path, json_path: Path) -> None:
-    json_path.parent.mkdir(parents=True, exist_ok=True)
-    json_path.write_text(
-        json.dumps({"meta": meta, "utterances": utterances}, indent=2, ensure_ascii=False), encoding="utf-8"
-    )
-    lines = [
-        f"# {meta['student']} — review {meta['date']}",
-        "",
-        f"Language: {meta['language']} · Duration: {_ts(meta['duration'])}",
-        "",
-    ]
-    for u in utterances:
-        lines.append(f"**[{_ts(u['start'])}] {u['speaker']}:** {u['text']}")
-        lines.append("")
-    md_path.parent.mkdir(parents=True, exist_ok=True)
-    md_path.write_text("\n".join(lines), encoding="utf-8")

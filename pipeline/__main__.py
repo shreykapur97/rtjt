@@ -1,11 +1,15 @@
-"""Usage: python -m pipeline [files or folders...] [--force] [--no-diarize]
+"""Usage: python -m pipeline [files or folders...] [--force] [--no-diarize] [--render]
 
 With no paths, processes every audio file under data/raw_recordings.
 data/raw_recordings/<date>/<Name>.m4a ->
   outputs/students/<Name>/<date>_transcript.md   (shareable)
   outputs/_work/<date>/<Name>.json               (local working data)
+
+--render rebuilds every .md from the existing .json without re-transcribing
+(use after changing formatting settings).
 """
 import argparse
+import json
 import time
 import warnings
 from pathlib import Path
@@ -14,6 +18,7 @@ warnings.filterwarnings("ignore")
 
 from .audio import AUDIO_EXTS, SAMPLE_RATE, load_audio  # noqa: E402
 from .config import load_config  # noqa: E402
+from .render import save, write_markdown  # noqa: E402
 
 
 def find_audio(paths: list[Path]) -> list[Path]:
@@ -26,14 +31,35 @@ def find_audio(paths: list[Path]) -> list[Path]:
     return files
 
 
+def md_path_for(outputs: Path, student: str, date: str) -> Path:
+    return outputs / "students" / student / f"{date}_transcript.md"
+
+
+def render_all(cfg: dict) -> None:
+    outputs = cfg["paths"]["outputs"]
+    for json_path in sorted((outputs / "_work").rglob("*.json")):
+        data = json.loads(json_path.read_text(encoding="utf-8"))
+        if "words" not in data["utterances"][0]:
+            print(f"skip {json_path.relative_to(outputs)} (old format, re-transcribe with --force)")
+            continue
+        md_path = md_path_for(outputs, data["meta"]["student"], data["meta"]["date"])
+        write_markdown(data, cfg["render"], md_path, cfg["paths"]["presentations"])
+        print(f"rendered {md_path.relative_to(outputs.parent)}")
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Transcribe and speaker-label review recordings")
     parser.add_argument("paths", nargs="*", type=Path)
     parser.add_argument("--force", action="store_true", help="redo files that already have outputs")
     parser.add_argument("--no-diarize", action="store_true", help="skip speaker labelling")
+    parser.add_argument("--render", action="store_true", help="rebuild .md files from existing .json only")
     args = parser.parse_args()
 
     cfg = load_config()
+    if args.render:
+        render_all(cfg)
+        return
+
     recordings, outputs = cfg["paths"]["recordings"], cfg["paths"]["outputs"]
     files = find_audio([p.resolve() for p in args.paths] or [recordings])
     if not files:
@@ -41,7 +67,7 @@ def main() -> None:
         return
 
     from .diarize import diarize
-    from .merge import build_utterances, write_outputs
+    from .merge import build_utterances
     from .transcribe import load_model, transcribe
 
     diarize_on = cfg["diarization"]["enabled"] and not args.no_diarize
@@ -49,7 +75,7 @@ def main() -> None:
     for i, f in enumerate(files, 1):
         rel = f.relative_to(recordings) if f.is_relative_to(recordings) else Path(f.name)
         student, date = f.stem, (rel.parent.name or "undated")
-        md_path = outputs / "students" / student / f"{date}_transcript.md"
+        md_path = md_path_for(outputs, student, date)
         json_path = outputs / "_work" / date / f"{student}.json"
         if md_path.exists() and not args.force:
             print(f"[{i}/{len(files)}] skip {rel} (exists, use --force)")
@@ -71,12 +97,14 @@ def main() -> None:
             model = load_model(cfg["whisper"])
         words, language = transcribe(model, audio, cfg["whisper"])
 
-        utterances = build_utterances(words, turns)
-        meta = {
-            "student": student, "date": date, "source": str(rel),
-            "language": language, "duration": duration, "whisper": cfg["whisper"]["model"],
+        data = {
+            "meta": {
+                "student": student, "date": date, "source": str(rel),
+                "language": language, "duration": duration, "whisper": cfg["whisper"]["model"],
+            },
+            "utterances": build_utterances(words, turns),
         }
-        write_outputs(utterances, meta, md_path, json_path)
+        save(data, cfg["render"], md_path, json_path, cfg["paths"]["presentations"])
         print(f"  done in {(time.time() - t0) / 60:.1f} min -> {md_path.relative_to(outputs.parent)}")
 
 
