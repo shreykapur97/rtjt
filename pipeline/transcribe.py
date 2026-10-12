@@ -9,7 +9,7 @@ def load_model(cfg: dict) -> WhisperModel:
 
 
 def _vocab(cfg: dict) -> list[str]:
-    return (cfg.get("names") or []) + (cfg.get("vocabulary") or [])
+    return (cfg.get("names") or []) + (cfg.get("terms") or []) + (cfg.get("vocabulary") or [])
 
 
 def _prompt(cfg: dict) -> str:

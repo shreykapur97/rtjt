@@ -8,6 +8,19 @@ SAMPLE_RATE = 16000
 AUDIO_EXTS = {".wav", ".mp3", ".m4a", ".flac", ".ogg", ".opus", ".aac", ".wma", ".webm", ".mp4", ".mov", ".mkv"}
 
 
+def read_markers(path: Path) -> list[float]:
+    """Markers set with Ctrl+M in Windows Sound Recorder, stored as "s1;s2;" in the comment tag."""
+    cmd = ["ffprobe", "-v", "error", "-show_entries", "format_tags=comment", "-of", "default=nw=1:nk=1", str(path)]
+    comment = subprocess.run(cmd, capture_output=True, text=True).stdout.strip()
+    markers = []
+    for part in comment.split(";"):
+        try:
+            markers.append(float(part))
+        except ValueError:
+            pass
+    return sorted(markers)
+
+
 def load_audio(path: Path) -> np.ndarray:
     cmd = [
         "ffmpeg", "-nostdin", "-v", "error", "-i", str(path),

@@ -16,7 +16,7 @@ from pathlib import Path
 
 warnings.filterwarnings("ignore")
 
-from .audio import AUDIO_EXTS, SAMPLE_RATE, load_audio  # noqa: E402
+from .audio import AUDIO_EXTS, SAMPLE_RATE, load_audio, read_markers  # noqa: E402
 from .config import load_config  # noqa: E402
 from .render import save, write_markdown  # noqa: E402
 
@@ -42,6 +42,11 @@ def render_all(cfg: dict) -> None:
         if "words" not in data["utterances"][0]:
             print(f"skip {json_path.relative_to(outputs)} (old format, re-transcribe with --force)")
             continue
+        if "markers" not in data["meta"]:
+            # Older outputs: read markers from the recording and store them
+            recording = cfg["paths"]["recordings"] / data["meta"]["source"]
+            data["meta"]["markers"] = read_markers(recording) if recording.exists() else []
+            json_path.write_text(json.dumps(data, indent=1, ensure_ascii=False), encoding="utf-8")
         md_path = md_path_for(outputs, data["meta"]["student"], data["meta"]["date"])
         write_markdown(data, cfg["render"], md_path, cfg["paths"]["presentations"])
         print(f"rendered {md_path.relative_to(outputs.parent)}")
@@ -101,6 +106,7 @@ def main() -> None:
             "meta": {
                 "student": student, "date": date, "source": str(rel),
                 "language": language, "duration": duration, "whisper": cfg["whisper"]["model"],
+                "markers": read_markers(f),
             },
             "utterances": build_utterances(words, turns),
         }

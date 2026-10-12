@@ -7,6 +7,7 @@ whisper:
   condition_on_previous_text: true    # keeps punctuation/casing consistent across 30 s windows
   # Words Whisper should spell correctly.
   names: []             # people's names: set in config.local.yaml (private), not here
+  terms: []             # thesis-specific words (topics, sites, places): config.local.yaml
   vocabulary:
     - IAAC
     - thesis
@@ -24,6 +25,8 @@ render:
   paragraph_max_words: 120    # split long monologues at the next sentence end
   interjection_max_words: 3   # "yeah", "mm-hm" folded inline into the other speaker's turn
   interjection_max_seconds: 2.0
+  marker_before: 30           # seconds highlighted before a Ctrl+M marker
+  marker_after: 10            # seconds highlighted after it
 paths:
   recordings: data/raw_recordings
   presentations: data/presentations

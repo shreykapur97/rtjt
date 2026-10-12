@@ -75,18 +75,35 @@ def render_markdown(data: dict, cfg: dict, presentation: Path | None, md_path: P
     if presentation:
         link = Path(os.path.relpath(presentation, md_path.parent)).as_posix()
         info.append(f"**Presentation:** [{presentation.name}]({link})")
-    lines += [" · ".join(info), "", "| Speaker | Speaking time | Share |", "|---|---|---|"]
+    lines += [" · ".join(info), ""]
+
+    markers = meta.get("markers", [])
+    if markers:
+        links = [f"[{k + 1} · {_ts(m)}](#marker-{k + 1})" for k, m in enumerate(markers)]
+        lines += ["**🔖 Marked moments:** " + " · ".join(links), ""]
+
+    lines += ["| Speaker | Speaking time | Share |", "|---|---|---|"]
     for speaker, secs in speaking.items():
         lines.append(f"| {speaker} | {_ts(secs)} | {secs / total:.0%} |")
     lines += ["", "---", ""]
 
+    windows = [(m - cfg["marker_before"], m + cfg["marker_after"]) for m in markers]
+    labelled, prev_hit = set(), False
     for u in _fold_interjections(utterances, cfg):
-        paras = _paragraphs(u["words"], cfg)
-        lines.append(f"**{u['speaker']}** `{_ts(u['start'])}`")
-        lines.append(_text(paras[0]))
-        for p in paras[1:]:
-            lines += ["", f"`{_ts(p[0]['start'])}` {_text(p)}"]
-        lines.append("")
+        for n, p in enumerate(_paragraphs(u["words"], cfg)):
+            block = [f"**{u['speaker']}** `{_ts(u['start'])}`", _text(p)] if n == 0 else [f"`{_ts(p[0]['start'])}` {_text(p)}"]
+            hits = [k for k, (a, b) in enumerate(windows) if p[0]["start"] < b and p[-1]["end"] > a]
+            if hits:
+                label = []
+                for k in hits:
+                    if k not in labelled:
+                        labelled.add(k)
+                        label += [f'<a id="marker-{k + 1}"></a>**🔖 Marked moment {k + 1}** · `{_ts(markers[k])}`', ""]
+                block = ["> " + line if line else ">" for line in label + block]
+                if prev_hit:
+                    lines[-1] = ">"  # keep consecutive highlighted paragraphs in one quote box
+            lines += block + [""]
+            prev_hit = bool(hits)
     return "\n".join(lines)
 
 
