@@ -50,24 +50,34 @@ def wer(ref: list[str], hyp: list[str]) -> float:
     return prev[-1] / max(len(ref), 1)
 
 
-def change_recall(ref: list[str], changes: list[int], hyp_words: list[dict], tolerance: int) -> float | None:
-    """Share of reference speaker changes where the pipeline also changes speaker nearby."""
-    if not changes:
-        return None
+def change_counts(ref: list[str], changes: list[int], hyp_words: list[dict], tolerance: int) -> dict:
+    """Compare speaker changes. Recall: reference changes the pipeline also switches at.
+    Precision: pipeline switches that sit at a real change (penalises switching too often)."""
     hyp = [(t, w["speaker"]) for w in hyp_words for t in normalise(w["text"])]
     hyp_tokens = [t for t, _ in hyp]
-    hyp_changes = {j for j in range(1, len(hyp)) if hyp[j][1] != hyp[j - 1][1]}
+    hyp_changes = [j for j in range(1, len(hyp)) if hyp[j][1] != hyp[j - 1][1]]
     ref_to_hyp = {}
     for a, b, size in difflib.SequenceMatcher(None, ref, hyp_tokens, autojunk=False).get_matching_blocks():
         for k in range(size):
             ref_to_hyp[a + k] = b + k
-    hits = 0
-    for c in changes:
-        # nearest aligned reference word at or after the change
-        j = next((ref_to_hyp[i] for i in range(c, min(c + tolerance + 1, len(ref))) if i in ref_to_hyp), None)
-        if j is not None and any(abs(j - h) <= tolerance for h in hyp_changes):
-            hits += 1
-    return hits / len(changes)
+    # each reference change, located in the pipeline's word sequence (nearest aligned word at or after it)
+    located = [j for c in changes
+               if (j := next((ref_to_hyp[i] for i in range(c, min(c + tolerance + 1, len(ref))) if i in ref_to_hyp),
+                             None)) is not None]
+    return {
+        "ref": len(changes),
+        "ref_hit": sum(any(abs(j - h) <= tolerance for h in hyp_changes) for j in located),
+        "hyp": len(hyp_changes),
+        "hyp_hit": sum(any(abs(j - h) <= tolerance for j in located) for h in hyp_changes),
+    }
+
+
+def change_scores(counts: list[dict]) -> tuple[float, float, float]:
+    """Recall, precision and F1 pooled over all clips and runs."""
+    recall = sum(c["ref_hit"] for c in counts) / max(sum(c["ref"] for c in counts), 1)
+    precision = sum(c["hyp_hit"] for c in counts) / max(sum(c["hyp"] for c in counts), 1)
+    f1 = 2 * recall * precision / (recall + precision) if recall + precision else 0.0
+    return recall, precision, f1
 
 
 def preset_cfg(base: dict, preset: dict) -> dict:
@@ -105,7 +115,7 @@ def main() -> None:
         data[clip.stem] = (audio, diarize(audio, cfg["diarization"]), *read_reference(clip.with_suffix(".txt")))
 
     model = load_model(cfg["whisper"])
-    results = {}  # preset -> clip -> list of (wer, recall)
+    results = {}  # preset -> clip -> list of (wer, change counts)
     t0 = time.time()
     for name, preset in presets.items():
         wcfg = preset_cfg(cfg["whisper"], preset)
@@ -115,11 +125,11 @@ def main() -> None:
                 utterances = remove_ghosts(build_utterances(words, turns), cfg["render"]["ghost_max_words"])
                 labelled = [w for u in utterances for w in u["words"]]
                 hyp = [t for w in words for t in normalise(w["text"])]
-                score = (wer(ref, hyp), change_recall(ref, changes, labelled, ev["change_tolerance"]))
+                score = (wer(ref, hyp), change_counts(ref, changes, labelled, ev["change_tolerance"]))
                 results.setdefault(name, {}).setdefault(clip, []).append(score)
                 print(f"  {name:14s} {clip:24s} run {r + 1}: WER {score[0]:.1%}")
 
-    report = render_report(results, list(data), repeats)
+    report = render_report(results, list(data), repeats, cfg["diarization"])
     print("\n" + report)
     out = cfg["paths"]["outputs"] / "_eval" / f"{datetime.now():%Y-%m-%d_%H%M}.md"
     out.parent.mkdir(parents=True, exist_ok=True)
@@ -127,18 +137,20 @@ def main() -> None:
     print(f"\nsaved {out.relative_to(cfg['paths']['outputs'].parent)} · {(time.time() - t0) / 60:.1f} min")
 
 
-def render_report(results: dict, clips: list[str], repeats: int) -> str:
+def render_report(results: dict, clips: list[str], repeats: int, diarization: dict) -> str:
     pct = lambda x: f"{x:.1%}"
     lines = [f"# Evaluation {datetime.now():%Y-%m-%d %H:%M}", "",
+             f"Diarization: {diarization['model']} (exclusive: {diarization.get('exclusive', False)})", "",
              f"WER = share of words wrong (lower is better). Range = best–worst over {repeats} runs.",
-             "Speaker changes = reference changes the pipeline also switches speaker at (higher is better).", "",
-             "| Preset | Avg WER | Range | Speaker changes |", "|---|---|---|---|"]
+             "Speaker changes: recall = real changes caught, precision = pipeline switches that were real,",
+             "F1 = both combined (higher is better).", "",
+             "| Preset | Avg WER | Range | Change recall | Change precision | Change F1 |", "|---|---|---|---|---|---|"]
     ranked = sorted(results, key=lambda n: statistics.mean(s[0] for c in results[n].values() for s in c))
     for name in ranked:
         per_run = [statistics.mean(results[name][c][r][0] for c in clips) for r in range(repeats)]
-        recalls = [s[1] for c in results[name].values() for s in c if s[1] is not None]
+        recall, precision, f1 = change_scores([s[1] for c in results[name].values() for s in c])
         lines.append(f"| {name} | {pct(statistics.mean(per_run))} | {pct(min(per_run))}–{pct(max(per_run))} | "
-                     f"{pct(statistics.mean(recalls)) if recalls else '–'} |")
+                     f"{pct(recall)} | {pct(precision)} | {pct(f1)} |")
     lines += ["", "## WER per clip", "", "| Preset | " + " | ".join(clips) + " |", "|---" * (len(clips) + 1) + "|"]
     for name in ranked:
         cells = [pct(statistics.mean(s[0] for s in results[name][c])) for c in clips]
