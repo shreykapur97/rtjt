@@ -27,7 +27,11 @@ diarization:
   min_speakers: null
   max_speakers: null
 render:
-  paragraph_pause: 1.5        # seconds of silence that start a new paragraph
+  # "Ghost" speakers (noise, a mis-split voice) get their words merged into the nearest real
+  # speaker when BOTH limits hold: under this many seconds and under this share of all speech
+  ghost_max_seconds: 30
+  ghost_max_share: 0.02
+  paragraph_pause: 1.5       # seconds of silence that start a new paragraph
   paragraph_max_words: 120    # split long monologues at the next sentence end
   interjection_max_words: 3   # "yeah", "mm-hm" folded inline into the other speaker's turn
   interjection_max_seconds: 2.0

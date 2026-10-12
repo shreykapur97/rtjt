@@ -94,7 +94,7 @@ def main() -> None:
         return
 
     from .diarize import diarize
-    from .merge import build_utterances
+    from .merge import build_utterances, remove_ghosts
     from .transcribe import load_model, transcribe
 
     print(f"{len(clips)} clips · {len(presets)} presets · {repeats} repeats")
@@ -112,7 +112,9 @@ def main() -> None:
         for clip, (audio, turns, ref, changes) in data.items():
             for r in range(repeats):
                 words, _ = transcribe(model, audio, wcfg, quiet=True)
-                labelled = [w for u in build_utterances(words, turns) for w in u["words"]]
+                utterances = remove_ghosts(build_utterances(words, turns),
+                                           cfg["render"]["ghost_max_seconds"], cfg["render"]["ghost_max_share"])
+                labelled = [w for u in utterances for w in u["words"]]
                 hyp = [t for w in words for t in normalise(w["text"])]
                 score = (wer(ref, hyp), change_recall(ref, changes, labelled, ev["change_tolerance"]))
                 results.setdefault(name, {}).setdefault(clip, []).append(score)

@@ -4,6 +4,8 @@ import os
 from collections import defaultdict
 from pathlib import Path
 
+from .merge import remove_ghosts
+
 SENTENCE_END = (".", "?", "!")
 
 
@@ -66,7 +68,8 @@ def _paragraphs(words: list[dict], cfg: dict) -> list[list[dict]]:
 
 
 def render_markdown(data: dict, cfg: dict, presentation: Path | None, md_path: Path) -> str:
-    meta, utterances = data["meta"], data["utterances"]
+    meta = data["meta"]
+    utterances = remove_ghosts(data["utterances"], cfg["ghost_max_seconds"], cfg["ghost_max_share"])
     speaking = _speaking_time(utterances)
     total = sum(speaking.values()) or 1
 
@@ -80,7 +83,7 @@ def render_markdown(data: dict, cfg: dict, presentation: Path | None, md_path: P
     markers = meta.get("markers", [])
     if markers:
         links = [f"[{k + 1} · {_ts(m)}](#marker-{k + 1})" for k, m in enumerate(markers)]
-        lines += ["**🔖 Marked moments:** " + " · ".join(links), ""]
+        lines += ["**Marked moments:** " + " · ".join(links), ""]
 
     lines += ["| Speaker | Speaking time | Share |", "|---|---|---|"]
     for speaker, secs in speaking.items():
@@ -98,7 +101,7 @@ def render_markdown(data: dict, cfg: dict, presentation: Path | None, md_path: P
                 for k in hits:
                     if k not in labelled:
                         labelled.add(k)
-                        label += [f'<a id="marker-{k + 1}"></a>**🔖 Marked moment {k + 1}** · `{_ts(markers[k])}`', ""]
+                        label += [f'<a id="marker-{k + 1}"></a>**Marked moment {k + 1}** · `{_ts(markers[k])}`', ""]
                 block = ["> " + line if line else ">" for line in label + block]
                 if prev_hit:
                     lines[-1] = ">"  # keep consecutive highlighted paragraphs in one quote box
