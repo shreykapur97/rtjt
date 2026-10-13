@@ -49,8 +49,7 @@ def render_all(cfg: dict) -> None:
             data["meta"]["markers"] = read_markers(recording) if recording.exists() else []
             json_path.write_text(json.dumps(data, indent=1, ensure_ascii=False), encoding="utf-8")
         md_path = md_path_for(outputs, data["meta"]["student"], data["meta"]["date"])
-        write_markdown(data, cfg["render"], md_path, cfg["paths"]["presentations"],
-                       names_for(data, outputs), cfg["voices"]["label_student"])
+        write_markdown(data, cfg["render"], md_path, names_for(data, outputs), cfg["voices"]["label_student"])
         print(f"rendered {md_path.relative_to(outputs.parent)}")
 
 
@@ -119,8 +118,7 @@ def main() -> None:
             names, scores = match(embs, candidates(profiles, cfg, student), cfg["voices"]["threshold"])
             data["meta"].update(speaker_embeddings=embs, speaker_names=names, speaker_scores=scores)
             print(f"  {', '.join(f'{s}={n}' for s, n in sorted(names.items())) or 'nobody recognised'}")
-        save(data, cfg["render"], md_path, json_path, cfg["paths"]["presentations"],
-             names_for(data, outputs), cfg["voices"]["label_student"])
+        save(data, cfg["render"], md_path, json_path, names_for(data, outputs), cfg["voices"]["label_student"])
         print(f"  done in {(time.time() - t0) / 60:.1f} min -> {md_path.relative_to(outputs.parent)}")
 
 

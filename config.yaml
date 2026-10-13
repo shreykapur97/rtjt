@@ -62,6 +62,6 @@ eval:
 paths:
   eval: data/eval
   recordings: data/raw_recordings
-  presentations: data/presentations
+  presentations: data/raw_presentations
   voiceprints: data/voiceprints
   outputs: outputs

@@ -1,6 +1,5 @@
 """Turn the JSON working data into a readable Markdown transcript."""
 import json
-import os
 from collections import defaultdict
 from pathlib import Path
 
@@ -80,8 +79,8 @@ def apply_names(utterances: list[dict], names: dict[str, str], student: str | No
                         for u in utterances for w in u["words"]])
 
 
-def render_markdown(data: dict, cfg: dict, presentation: Path | None, md_path: Path,
-                    names: dict[str, str] | None = None, label_student: bool = False) -> str:
+def render_markdown(data: dict, cfg: dict, names: dict[str, str] | None = None,
+                    label_student: bool = False) -> str:
     meta = data["meta"]
     utterances = remove_ghosts(data["utterances"], cfg["ghost_max_words"])
     utterances = apply_names(utterances, names or {}, meta["student"] if label_student else None)
@@ -89,11 +88,7 @@ def render_markdown(data: dict, cfg: dict, presentation: Path | None, md_path: P
     total = sum(speaking.values()) or 1
 
     lines = [f"# {meta['student']} — review {meta['date']}", ""]
-    info = [f"**Duration:** {_ts(meta['duration'])}", f"**Language:** {meta['language']}"]
-    if presentation:
-        link = Path(os.path.relpath(presentation, md_path.parent)).as_posix()
-        info.append(f"**Presentation:** [{presentation.name}]({link})")
-    lines += [" · ".join(info), ""]
+    lines += [f"**Duration:** {_ts(meta['duration'])} · **Language:** {meta['language']}", ""]
 
     markers = meta.get("markers", [])
     if markers:
@@ -125,17 +120,14 @@ def render_markdown(data: dict, cfg: dict, presentation: Path | None, md_path: P
     return "\n".join(lines)
 
 
-def save(data: dict, cfg: dict, md_path: Path, json_path: Path, presentations_dir: Path,
+def save(data: dict, cfg: dict, md_path: Path, json_path: Path,
          names: dict[str, str] | None = None, label_student: bool = False) -> None:
     json_path.parent.mkdir(parents=True, exist_ok=True)
     json_path.write_text(json.dumps(data, indent=1, ensure_ascii=False), encoding="utf-8")
-    write_markdown(data, cfg, md_path, presentations_dir, names, label_student)
+    write_markdown(data, cfg, md_path, names, label_student)
 
 
-def write_markdown(data: dict, cfg: dict, md_path: Path, presentations_dir: Path,
+def write_markdown(data: dict, cfg: dict, md_path: Path,
                    names: dict[str, str] | None = None, label_student: bool = False) -> None:
-    meta = data["meta"]
-    pdf = presentations_dir / meta["date"] / f"{meta['student']}.pdf"
     md_path.parent.mkdir(parents=True, exist_ok=True)
-    md = render_markdown(data, cfg, pdf if pdf.exists() else None, md_path, names, label_student)
-    md_path.write_text(md, encoding="utf-8")
+    md_path.write_text(render_markdown(data, cfg, names, label_student), encoding="utf-8")

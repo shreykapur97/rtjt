@@ -68,7 +68,7 @@ def main() -> None:
 
         name = f"{meta['date']}_transcript"
         save(new_data, cfg["render"], out_root / meta["student"] / f"{name}.md",
-             out_root / "_work" / meta["date"] / f"{meta['student']}.json", cfg["paths"]["presentations"])
+             out_root / "_work" / meta["date"] / f"{meta['student']}.json")
         speakers = lambda us: [w["speaker"] for u in us for w in u["words"]]
         rows.append((meta["student"], *stats(old), *stats(new), agreement(speakers(old), speakers(new))))
 

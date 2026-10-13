@@ -12,6 +12,7 @@ dependencies = [
     "python-dotenv",
     "pyyaml",
     "huggingface-hub<1.0",
+    "pymupdf>=1.28.2",
 ]
 
 [tool.uv]
