@@ -29,7 +29,7 @@ data/raw_recordings/<YYYY-MM-DD>/<Name>.m4a
 
 **2. Transcribe.** Only new recordings are processed; known voices are named automatically.
 ```
-python -m pipeline
+python -m pipeline.audio
 ```
 
 **3. Check the names.** Open each `outputs/students/<Name>/<date>_transcript.md` and look at
@@ -44,31 +44,50 @@ the speaker table at the top.
     SPEAKER_01: <Name>
   ```
   ```
-  python -m pipeline --render
+  python -m pipeline.audio --render
   ```
   Names typed here always win over the automatic ones. Optionally, strengthen the voiceprints
   with the corrected round:
   ```
-  python -m pipeline.voices enroll
+  python -m pipeline.audio.voices enroll
   ```
 
-**4. Export** the transcripts to the reviews folder (`REVIEWS_DIR` in `.env`):
-```
-python -m pipeline.export
-```
-Only new or changed transcripts are copied. If you fix a name after exporting, run
-`--render` and then `export` again: the corrected transcript replaces the old copy.
-
-**5. Slides (optional).** Ask students for a PDF and save it next to the recording's date:
+**4. Slides (separate, optional).** Ask students for a PDF, saved by date:
 ```
 data/raw_presentations/<YYYY-MM-DD>/<Name>.pdf
 ```
+(or point `paths.presentations` in `config.local.yaml` at a shared folder with the same layout;
+Windows `.lnk` shortcuts don't work). Then:
 ```
 python -m pipeline.slides
 ```
-Each page is turned into an image and the copy goes to the reviews folder, so hidden text,
-links and metadata never reach Cowork. Other formats are skipped: export them as PDF first.
-Only new or changed PDFs are copied (`--force` redoes all).
+Each page is turned into an image and saved as `outputs/students/<Name>/<date>_slides.pdf`, so
+hidden text, links and metadata never reach Cowork. Only new or changed PDFs are redone
+(`--force` redoes all).
+
+PDF only. Other formats are skipped and listed:
+- Google Slides (`.gslides` in Drive for Desktop are cloud-only links that can't be read):
+  in Drive, **File → Download → PDF**, and save it into the same date folder as `<Name>.pdf`.
+- PowerPoint, Keynote etc.: export as PDF.
+
+What a PDF loses (true of any PDF export, not caused by the flattening):
+- animations and builds: each slide shows its final state, all objects at once, so
+  items meant to appear in turn or disappear may overlap or cover each other
+- videos and GIFs: one still frame (or an empty box), no link
+- speaker notes
+
+Slides are currently only used as reference (e.g. to check unclear words in transcripts), where
+the static text is enough. Students can make a PDF more faithful by duplicating a slide per
+animation step and adding a still and a link for each video.
+
+**5. Export** to the reviews folder (`REVIEWS_DIR` in `.env`):
+```
+python -m pipeline.export            # transcripts and slides
+python -m pipeline.export --audio    # transcripts only
+python -m pipeline.export --slides   # slides only
+```
+Only new or changed files are copied. If you fix a name after exporting, run
+`--render` and then `export` again: the corrected transcript replaces the old copy.
 
 ## Usage
 Put recordings in a dated folder, one file per student:
@@ -77,18 +96,18 @@ data/raw_recordings/2026-10-08/<Name>.m4a
 ```
 Then run:
 ```
-python -m pipeline                       # all new recordings
-python -m pipeline data\raw_recordings\2026-10-08   # one round
-python -m pipeline <file>.m4a --force    # redo one file
+python -m pipeline.audio                       # all new recordings
+python -m pipeline.audio data\raw_recordings\2026-10-08   # one round
+python -m pipeline.audio <file>.m4a --force    # redo one file
 ```
 Recordings that already have a transcript are skipped. In VS Code: Run and Debug (Ctrl+Shift+D) → **Transcribe all**.
 
 Other commands:
 ```
-python -m pipeline --render                 # rebuild .md from .json after changing render settings
-python -m pipeline.evaluate                 # score settings on hand-corrected clips in data/eval/
-python -m pipeline.rediarize <label>        # re-run speaker detection only, into outputs/_compare/<label>/
-python -m pipeline.voices enroll|test|identify   # voiceprints: build, check accuracy, label transcripts
+python -m pipeline.audio --render                 # rebuild .md from .json after changing render settings
+python -m pipeline.audio.evaluate                 # score settings on hand-corrected clips in data/eval/
+python -m pipeline.audio.rediarize <label>        # re-run speaker detection only, into outputs/_compare/<label>/
+python -m pipeline.audio.voices enroll|test|identify   # voiceprints: build, check accuracy, label transcripts
 ```
 Speaker names come from `outputs/_work/<date>/speakers.yaml` (manual, always wins) and from
 voiceprints in `data/voiceprints/` (both gitignored). People to recognise in every recording are
@@ -97,13 +116,16 @@ Ctrl+M markers from Windows Sound Recorder are highlighted in the transcript.
 
 ## Evaluation
 `data/eval/<clip>.m4a` + `<clip>.txt` hold short clips with hand-corrected text (a line starting
-with `-` marks a speaker change). `pipeline.evaluate` reports word error rate and speaker-change
+with `-` marks a speaker change). `pipeline.audio.evaluate` reports word error rate and speaker-change
 recall/precision/F1 for each preset in `config.yaml` → `eval.presets`.
 
 ## Layout
 Inputs are organised by date, outputs by student.
 ```
 pipeline/                    code
+  audio/                     transcription pipeline     python -m pipeline.audio
+  slides/                    presentation pipeline      python -m pipeline.slides
+  export.py, config.py       shared
 config.yaml                  settings (override in config.local.yaml)
 data/                        (ignored)
   raw_recordings/<date>/<Name>.m4a
@@ -112,33 +134,34 @@ data/                        (ignored)
   voiceprints/<Name>.npy
 outputs/                     (ignored)
   students/<Name>/<date>_transcript.md   readable transcript
+  students/<Name>/<date>_slides.pdf      flattened presentation
   _work/<date>/<Name>.json               word timings + speakers, for later steps
 ```
 
 ## Export
-`python -m pipeline.export` copies the transcripts, and nothing else, to a separate folder
-for downstream tools (set `REVIEWS_DIR` in `.env`, outside this repo):
+`python -m pipeline.export` is the only step that writes outside this repo. It copies the
+transcripts and flattened slides, and nothing else, to a separate folder for downstream tools
+(set `REVIEWS_DIR` in `.env`, outside this repo):
 ```
 <REVIEWS_DIR>/transcripts/<date>/<Name>.md
+<REVIEWS_DIR>/presentations/<date>/<Name>.pdf     image-only: no hidden text, links or metadata
 ```
-`python -m pipeline.slides` copies the presentations (PDF only) to
-`<REVIEWS_DIR>/presentations/<date>/<Name>.pdf`, flattened: every page is rendered to an image,
-so hidden text, links, metadata and scripts never leave this folder.
+`--audio` or `--slides` exports just one of the two.
 
 ## Roadmap
 - [x] Transcription + speaker diarization
 - [x] Evaluation on hand-corrected clips; batched Whisper, community-1 diarization
 - [x] Readable transcripts: paragraphs, interjections, markers, ghost-speaker cleanup
-- [x] Speaker identification: voiceprints for recurring people (`pipeline.voices`), manual name map per round
+- [x] Speaker identification: voiceprints for recurring people (`pipeline.audio.voices`), manual name map per round
 - [ ] Review summaries + per-student progress tracking
 
 ## Quick commands
 Run in the VS Code terminal with the venv active, after adding recordings to
 `data/raw_recordings/<YYYY-MM-DD>/<Name>.m4a`:
 ```
-python -m pipeline                 # 1. transcribe new recordings + name speakers
-python -m pipeline --render        # 2. only if you fixed names in outputs/_work/<date>/speakers.yaml
-python -m pipeline.voices enroll   # 3. optional, after fixing names: improve voiceprints
-python -m pipeline.export          # 4. copy transcripts to the reviews folder
-python -m pipeline.slides          # 5. optional: flatten + copy slide PDFs to the reviews folder
+python -m pipeline.audio                 # 1. transcribe new recordings + name speakers
+python -m pipeline.audio --render        # 2. only if you fixed names in outputs/_work/<date>/speakers.yaml
+python -m pipeline.audio.voices enroll   # 3. optional, after fixing names: improve voiceprints
+python -m pipeline.slides               # 4. flatten slide PDFs (independent of 1-3)
+python -m pipeline.export               # 5. copy transcripts + slides to the reviews folder
 ```

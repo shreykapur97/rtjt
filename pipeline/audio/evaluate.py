@@ -1,6 +1,6 @@
 """Score transcription settings against hand-corrected clips.
 
-Usage: python -m pipeline.evaluate [--presets a b ...] [--repeats N]
+Usage: python -m pipeline.audio.evaluate [--presets a b ...] [--repeats N]
 
 data/eval/<clip>.m4a + <clip>.txt  (reference: exact words; a line starting with "-" = speaker change)
 Reports word error rate (WER, lower is better) and how many reference speaker changes the
@@ -17,8 +17,8 @@ from pathlib import Path
 
 warnings.filterwarnings("ignore")
 
-from .audio import load_audio  # noqa: E402
-from .config import load_config  # noqa: E402
+from .decode import load_audio  # noqa: E402
+from ..config import load_config  # noqa: E402
 
 FILLERS = {"um", "uh", "umm", "uhm", "mm", "mhm", "hmm", "erm", "ah", "eh"}
 

@@ -1,6 +1,6 @@
 """Re-run speaker detection on full recordings, reusing the saved Whisper words.
 
-Usage: python -m pipeline.rediarize <label>
+Usage: python -m pipeline.audio.rediarize <label>
 
 Writes outputs/_compare/<label>/<Name>/<date>_transcript.md (and .json) using the diarization
 settings in config.yaml, so a different speaker model can be read side by side with the current
@@ -14,8 +14,8 @@ from collections import Counter, defaultdict
 
 warnings.filterwarnings("ignore")
 
-from .audio import load_audio  # noqa: E402
-from .config import load_config  # noqa: E402
+from .decode import load_audio  # noqa: E402
+from ..config import load_config  # noqa: E402
 from .merge import build_utterances, remove_ghosts  # noqa: E402
 from .render import save  # noqa: E402
 

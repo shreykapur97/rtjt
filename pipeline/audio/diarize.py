@@ -5,7 +5,7 @@ import numpy as np
 import torch
 from pyannote.audio import Pipeline
 
-from .audio import SAMPLE_RATE
+from .decode import SAMPLE_RATE
 
 try:
     # torch>=2.6 only unpickles allowlisted types; older pyannote checkpoints need these

@@ -1,8 +1,8 @@
 """Voiceprints: recognise known people (the guides) by their voice.
 
-    python -m pipeline.voices enroll     build voiceprints from the names in speakers.yaml files
-    python -m pipeline.voices test       leave-one-out accuracy check against those names
-    python -m pipeline.voices identify   label existing transcripts and re-render them
+    python -m pipeline.audio.voices enroll     build voiceprints from the names in speakers.yaml files
+    python -m pipeline.audio.voices test       leave-one-out accuracy check against those names
+    python -m pipeline.audio.voices identify   label existing transcripts and re-render them
 
 A voiceprint is the average of pyannote's speaker embeddings (a vector describing a voice) over
 many stretches of that person's speech. To identify, each SPEAKER_xx in a recording gets its own
@@ -20,8 +20,8 @@ warnings.filterwarnings("ignore")
 
 import numpy as np  # noqa: E402
 
-from .audio import SAMPLE_RATE, load_audio  # noqa: E402
-from .config import load_config  # noqa: E402
+from .decode import SAMPLE_RATE, load_audio  # noqa: E402
+from ..config import load_config  # noqa: E402
 from .names import manual_names  # noqa: E402
 
 _EMBEDDER = None
@@ -188,7 +188,7 @@ def cmd_identify(cfg: dict) -> None:
 
     profiles = load_profiles(cfg)
     if not profiles:
-        print("No voiceprints yet: run `python -m pipeline.voices enroll` first.")
+        print("No voiceprints yet: run `python -m pipeline.audio.voices enroll` first.")
         return
     for path, data in recordings(cfg):
         embs = ensure_embeddings(path, data, cfg)

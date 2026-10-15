@@ -5,7 +5,7 @@
       "name": "Transcribe all (data/raw_recordings)",
       "type": "debugpy",
       "request": "launch",
-      "module": "pipeline",
+      "module": "pipeline.audio",
       "cwd": "${workspaceFolder}",
       "envFile": "${workspaceFolder}/.env",
       "console": "integratedTerminal"
@@ -14,7 +14,7 @@
       "name": "Transcribe current file",
       "type": "debugpy",
       "request": "launch",
-      "module": "pipeline",
+      "module": "pipeline.audio",
       "args": ["${file}"],
       "cwd": "${workspaceFolder}",
       "envFile": "${workspaceFolder}/.env",
