@@ -32,6 +32,7 @@ outputs/*
 !.env.example
 config.local.yaml
 HANDBOOK.md
+cowork/
 
 # ===== Python =====
 .venv/

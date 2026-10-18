@@ -4,7 +4,7 @@ Transcribes recorded thesis cluster reviews and labels who spoke when, so feedba
 
 Runs fully locally: [faster-whisper](https://github.com/SYSTRAN/faster-whisper) (large-v3, batched) for speech-to-text and [pyannote](https://github.com/pyannote/pyannote-audio) community-1 (exclusive mode) for speaker diarization. Settings were chosen with the evaluation script below.
 
-**Privacy:** recordings, transcripts and voiceprints never leave the machine and are gitignored. Only code is in this repo.
+**Privacy:** recordings, transcripts, notes and voiceprints are gitignored; only code is in this repo. Recordings and voiceprints never leave the machine. Transcripts and flattened slides are copied to a separate reviews folder, and only faculty notes are published to the faculty's Google Drive.
 
 ## Requirements
 - Windows/Linux with an NVIDIA GPU (8 GB VRAM is enough)
@@ -62,7 +62,7 @@ Windows `.lnk` shortcuts don't work). Then:
 python -m pipeline.slides
 ```
 Each page is turned into an image and saved as `outputs/students/<Name>/<date>_slides.pdf`, so
-hidden text, links and metadata never reach Cowork. Only new or changed PDFs are redone
+hidden text, links and metadata never reach the notes session. Only new or changed PDFs are redone
 (`--force` redoes all).
 
 PDF only. Other formats are skipped and listed:
@@ -88,6 +88,28 @@ python -m pipeline.export --slides   # slides only
 ```
 Only new or changed files are copied. If you fix a name after exporting, run
 `--render` and then `export` again: the corrected transcript replaces the old copy.
+
+**6. Faculty notes** (in the reviews folder, not here). Start a separate Claude Code session
+inside `REVIEWS_DIR` and run the `faculty-notes` skill:
+```
+cd <REVIEWS_DIR>
+claude
+/faculty-notes <YYYY-MM-DD>            # all students of that round
+/faculty-notes <YYYY-MM-DD> <Name> ...  # some students (overwrites their notes)
+```
+This writes a short note per student to `<REVIEWS_DIR>/notes/<date>/faculty/<Name>.md`,
+following general thesis research stages. The note rules are kept privately in the reviews
+folder, and that session has restricted permissions with no access to this repo. Read the
+notes and fix anything by hand before step 7.
+
+**7. Publish** the faculty notes to Google Drive as `.docx` (`FACULTY_NOTES_DIR` in `.env`, a
+Drive for Desktop path):
+```
+python -m pipeline.publish --date <YYYY-MM-DD>   # one round
+python -m pipeline.publish                       # all rounds
+```
+Only `notes/<date>/faculty/` is read. A `.docx` is rebuilt only when its note is newer, and
+nothing in Drive is deleted.
 
 ## Usage
 Put recordings in a dated folder, one file per student:
@@ -126,6 +148,7 @@ pipeline/                    code
   audio/                     transcription pipeline     python -m pipeline.audio
   slides/                    presentation pipeline      python -m pipeline.slides
   export.py, config.py       shared
+  publish.py                 faculty notes -> .docx     python -m pipeline.publish
 config.yaml                  settings (override in config.local.yaml)
 data/                        (ignored)
   raw_recordings/<date>/<Name>.m4a
@@ -148,12 +171,18 @@ transcripts and flattened slides, and nothing else, to a separate folder for dow
 ```
 `--audio` or `--slides` exports just one of the two.
 
+`python -m pipeline.publish` is the only step that writes to Google Drive. It reads only the
+faculty notes in the reviews folder and writes `.docx` copies to `FACULTY_NOTES_DIR`, which
+must be outside this repo and outside the reviews folder.
+
 ## Roadmap
 - [x] Transcription + speaker diarization
 - [x] Evaluation on hand-corrected clips; batched Whisper, community-1 diarization
 - [x] Readable transcripts: paragraphs, interjections, markers, ghost-speaker cleanup
 - [x] Speaker identification: voiceprints for recurring people (`pipeline.audio.voices`), manual name map per round
-- [ ] Review summaries + per-student progress tracking
+- [x] Faculty review notes in a separate session, published to Drive as `.docx`
+- [ ] Student notes, shared with each student
+- [ ] Per-student progress tracking across rounds
 
 ## Quick commands
 Run in the VS Code terminal with the venv active, after adding recordings to
@@ -164,4 +193,6 @@ python -m pipeline.audio --render        # 2. only if you fixed names in outputs
 python -m pipeline.audio.voices enroll   # 3. optional, after fixing names: improve voiceprints
 python -m pipeline.slides               # 4. flatten slide PDFs (independent of 1-3)
 python -m pipeline.export               # 5. copy transcripts + slides to the reviews folder
+# 6. in a Claude Code session inside the reviews folder: /faculty-notes <YYYY-MM-DD>
+python -m pipeline.publish --date <YYYY-MM-DD>   # 7. faculty notes -> .docx in Drive
 ```

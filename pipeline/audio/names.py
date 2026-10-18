@@ -1,9 +1,9 @@
 """Speaker names: automatic guesses from voiceprints, overridden by the manual map.
 
 Manual map: outputs/_work/<date>/speakers.yaml
-    Ayush:
-      SPEAKER_00: Rodrigo
-      SPEAKER_02: Shrey
+    StudentA:
+      SPEAKER_00: GuideA
+      SPEAKER_02: GuideB
 Values left empty are ignored. A name written here always wins over a voiceprint guess.
 """
 from pathlib import Path
