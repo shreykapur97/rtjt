@@ -166,6 +166,9 @@ python -m pipeline.slides               # 4. flatten slide PDFs (independent of 
 python -m pipeline.export               # 5. copy transcripts + slides to the reviews folder
 ```
 
+## Disclaimer
+The author accepts no liability for misuse of this software, including storing personal data beyond the consented period or any other unlawful use. Whoever runs it is responsible for consent, retention and legal compliance. See [DISCLAIMER.txt](DISCLAIMER.txt).
+
 ## License
 Copyright (C) 2026 Shrey Kapur
 
