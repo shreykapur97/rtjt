@@ -2,8 +2,8 @@ RTJT - Disclaimer and User Responsibility
 Copyright (C) 2026 Shrey Kapur
 
 This notice supplements the GNU Affero General Public License v3.0
-(LICENSE.txt) as an additional term permitted by section 7(a) of that
-license. It does not restrict any of the rights the license grants.
+(LICENSE.txt) with additional terms permitted by sections 7(a), 7(c) and
+7(f) of that license. It does not restrict any of the rights the license grants.
 
 
 1. No liability for use or misuse
@@ -36,14 +36,31 @@ voiceprints, which may count as biometric (special-category) data under the
 GDPR.
 
 
-3. Provided "as is"
+3. Modified versions
+
+Anyone who modifies this software is solely responsible for their modified
+version and for any consequences of using or distributing it. Modified
+versions must be clearly marked as changed from the original, and must not
+be presented as the work of, or as endorsed by, the original author.
+
+
+4. Indemnification
+
+Anyone who conveys this software or a modified version of it with any
+contractual assumption of liability to the recipient (such as a warranty,
+support agreement or service-level commitment) must indemnify the original
+author and contributors for any liability that such an assumption directly
+imposes on them.
+
+
+5. Provided "as is"
 
 The software is provided "as is", without warranty of any kind, as set out
 in sections 15 and 16 of the license. Transcripts and speaker labels may be
 inaccurate and must be checked by a person before anyone relies on them.
 
 
-4. Limits
+6. Limits
 
 Nothing in this notice limits or excludes liability where doing so is not
 permitted by applicable law.
