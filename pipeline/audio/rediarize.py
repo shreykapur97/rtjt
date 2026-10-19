@@ -1,3 +1,6 @@
+# Copyright (C) 2026 Shrey Kapur
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Re-run speaker detection on full recordings, reusing the saved Whisper words.
 
 Usage: python -m pipeline.audio.rediarize <label>

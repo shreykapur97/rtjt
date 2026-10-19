@@ -1,3 +1,6 @@
+# Copyright (C) 2026 Shrey Kapur
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Decode any audio file to 16 kHz mono float32 using ffmpeg (no temp files)."""
 import subprocess
 from pathlib import Path

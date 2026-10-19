@@ -1,3 +1,6 @@
+# Copyright (C) 2026 Shrey Kapur
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Usage: python -m pipeline.audio [files or folders...] [--force] [--no-diarize] [--render]
 
 With no paths, processes every audio file under data/raw_recordings.

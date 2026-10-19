@@ -3,6 +3,9 @@ name = "rtjt"
 version = "0.1.0"
 description = "Transcribe and speaker-label recorded thesis cluster student reviews"
 readme = "README.md"
+authors = [{ name = "Shrey Kapur" }]
+license = "AGPL-3.0-or-later"
+license-files = ["LICENSE.txt"]
 requires-python = ">=3.12,<3.13"
 dependencies = [
     "faster-whisper>=1.1",

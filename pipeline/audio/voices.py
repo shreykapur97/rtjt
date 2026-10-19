@@ -1,3 +1,6 @@
+# Copyright (C) 2026 Shrey Kapur
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Voiceprints: recognise known people (the guides) by their voice.
 
     python -m pipeline.audio.voices enroll     build voiceprints from the names in speakers.yaml files

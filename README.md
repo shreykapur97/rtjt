@@ -165,3 +165,8 @@ python -m pipeline.audio.voices enroll   # 3. optional, after fixing names: impr
 python -m pipeline.slides               # 4. flatten slide PDFs (independent of 1-3)
 python -m pipeline.export               # 5. copy transcripts + slides to the reviews folder
 ```
+
+## License
+Copyright (C) 2026 Shrey Kapur
+
+Licensed under the GNU Affero General Public License v3.0 or later. See [LICENSE.txt](LICENSE.txt).

@@ -68,3 +68,6 @@ Mark only the criteria the review actually covered, based on what was shown, not
 - Merge 4 Research question and 5 Aim into one criterion? If merged, either drop to 29 or add
   "Case study / site".
 - Where the marks go: inside each note, or a separate file per student.
+
+---
+Copyright (C) 2026 Shrey Kapur. Licensed under AGPL-3.0-or-later, see LICENSE.txt.

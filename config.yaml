@@ -1,4 +1,7 @@
-﻿# Default settings. Copy to config.local.yaml to override (gitignored).
+﻿# Copyright (C) 2026 Shrey Kapur
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
+# Default settings. Copy to config.local.yaml to override (gitignored).
 whisper:
   model: large-v3
   device: cuda

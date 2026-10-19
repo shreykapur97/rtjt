@@ -223,3 +223,6 @@ Feedback methods
 - Wikipedia, design rationale (IBIS, QOC): https://en.wikipedia.org/wiki/Design_rationale
 - Southampton, 15 years on from gIBIS and QOC: https://web-archive.southampton.ac.uk/eprints.aktors.org/513/index.html
 - University of Twente, process feedback (Hattie & Timperley): https://www.utwente.nl/en/learning-teaching/assessment/toolbox/organize-process-feedback/
+
+---
+Copyright (C) 2026 Shrey Kapur. Licensed under AGPL-3.0-or-later, see LICENSE.txt.
