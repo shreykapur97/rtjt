@@ -1,3 +1,6 @@
+# Copyright (C) 2026 Shrey Kapur
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Copy finished outputs into the reviews folder that Claude Cowork works in.
 
 Usage: python -m pipeline.export [--audio] [--slides]     (no flag = both)

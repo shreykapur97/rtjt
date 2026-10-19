@@ -1,3 +1,6 @@
+# Copyright (C) 2026 Shrey Kapur
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Speech-to-text with faster-whisper, word-level timestamps."""
 import numpy as np
 import torch  # noqa: F401  (loads CUDA/cuDNN DLLs that ctranslate2 needs on Windows)

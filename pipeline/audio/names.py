@@ -1,3 +1,6 @@
+# Copyright (C) 2026 Shrey Kapur
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Speaker names: automatic guesses from voiceprints, overridden by the manual map.
 
 Manual map: outputs/_work/<date>/speakers.yaml

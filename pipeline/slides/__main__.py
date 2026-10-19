@@ -1,3 +1,6 @@
+# Copyright (C) 2026 Shrey Kapur
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Flatten student presentations into image-only PDFs.
 
 Usage: python -m pipeline.slides [--force]

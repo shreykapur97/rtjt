@@ -1,3 +1,6 @@
+# Copyright (C) 2026 Shrey Kapur
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Assign a speaker to each word, group words into utterances, tidy up speakers."""
 from collections import defaultdict
 
