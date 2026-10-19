@@ -1,3 +1,6 @@
+# Copyright (C) 2026 Shrey Kapur
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Publish faculty review notes from the reviews folder to Google Drive as .docx.
 
 Usage: python -m pipeline.publish [--date YYYY-MM-DD]     (no date = all dates)
