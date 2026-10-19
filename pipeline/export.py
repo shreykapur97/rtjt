@@ -3,13 +3,14 @@
 
 """Copy finished outputs into the reviews folder that Claude Cowork works in.
 
-Usage: python -m pipeline.export [--audio] [--slides]     (no flag = both)
+Usage: python -m pipeline.export [--audio] [--slides] [--insession]     (no flag = all)
 
     dev/outputs/students/<Name>/<date>_transcript.md  ->  <REVIEWS_DIR>/transcripts/<date>/<Name>.md
     dev/outputs/students/<Name>/<date>_slides.pdf     ->  <REVIEWS_DIR>/presentations/<date>/<Name>.pdf
+    dev/outputs/students/<Name>/<date>_insession.md   ->  <REVIEWS_DIR>/insession/<date>/<Name>.md
 
 REVIEWS_DIR is set in .env (a path relative to dev/, or absolute) and must be outside dev/.
-One-way copy of these two file types only: no JSON, voiceprints, audio or speaker scores
+One-way copy of these file types only: no JSON, voiceprints, audio or speaker scores
 leave dev. A file is only rewritten when its content changed, and nothing in the reviews folder
 is ever deleted or read back.
 """
@@ -23,6 +24,7 @@ from .config import ROOT, load_config
 KINDS = {
     "audio": ("_transcript.md", "transcripts", ".md"),
     "slides": ("_slides.pdf", "presentations", ".pdf"),
+    "insession": ("_insession.md", "insession", ".md"),
 }
 
 
@@ -58,9 +60,10 @@ def export(students: Path, reviews: Path, kind: str) -> dict:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Copy transcripts and/or slides to the reviews folder")
+    parser = argparse.ArgumentParser(description="Copy transcripts, slides and/or in-session notes to the reviews folder")
     parser.add_argument("--audio", action="store_true", help="transcripts only")
     parser.add_argument("--slides", action="store_true", help="flattened slides only")
+    parser.add_argument("--insession", action="store_true", help="in-session notes only")
     args = parser.parse_args()
     kinds = [k for k in KINDS if getattr(args, k)] or list(KINDS)
 

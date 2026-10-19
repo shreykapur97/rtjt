@@ -66,5 +66,6 @@ paths:
   eval: data/eval
   recordings: data/raw_recordings
   presentations: data/raw_presentations
+  insession: data/raw_insession   # folder with the guides' exported in-session notes
   voiceprints: data/voiceprints
   outputs: outputs
