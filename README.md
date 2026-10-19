@@ -1,5 +1,7 @@
 # RTJT
 
+By **Shrey Kapur** ([@shreykapur97](https://github.com/shreykapur97))
+
 Transcribes recorded thesis cluster reviews and labels who spoke when, so feedback can be tracked per student across review rounds.
 
 Runs fully locally: [faster-whisper](https://github.com/SYSTRAN/faster-whisper) (large-v3, batched) for speech-to-text and [pyannote](https://github.com/pyannote/pyannote-audio) community-1 (exclusive mode) for speaker diarization. Settings were chosen with the evaluation script below.
@@ -165,6 +167,9 @@ python -m pipeline.audio.voices enroll   # 3. optional, after fixing names: impr
 python -m pipeline.slides               # 4. flatten slide PDFs (independent of 1-3)
 python -m pipeline.export               # 5. copy transcripts + slides to the reviews folder
 ```
+
+## Author
+Created and maintained by **Shrey Kapur** ([@shreykapur97](https://github.com/shreykapur97)).
 
 ## Disclaimer
 The author accepts no liability for misuse of this software, including storing personal data beyond the consented period or any other unlawful use. Whoever runs it is responsible for consent, retention and legal compliance. See [DISCLAIMER.txt](DISCLAIMER.txt).
